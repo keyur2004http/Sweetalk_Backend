@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-@CrossOrigin(origins = "http://192.168.1.6:3000")
 @RestController
 @RequestMapping("/api/profiles") // Use a consistent base path
 

@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "http://192.168.1.6:3000")
 @RestController
 @RequestMapping("/api/post")
 public class PostController {
