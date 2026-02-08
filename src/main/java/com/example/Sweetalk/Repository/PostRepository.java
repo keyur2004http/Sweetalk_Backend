@@ -31,7 +31,7 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     List<Post> findFeedByUsername(@Param("username") String username);
 
 
-    @Modifying
-    @Query("DELETE FROM Post p WHERE p.profile.userId = :profileId")
-    void deleteByProfileId(Long profileId);
+        @Modifying
+        @Query("DELETE FROM Post p WHERE p.profile.userId = :profileId")
+        void deleteByProfileId(Long profileId);
 }

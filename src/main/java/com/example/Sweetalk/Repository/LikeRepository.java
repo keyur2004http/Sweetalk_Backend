@@ -36,4 +36,9 @@ import java.util.Optional;
     @Modifying
     @Query("DELETE FROM Likes l WHERE l.profile.userId = :profileId")
     void deleteByProfileId(Long profileId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Likes l WHERE l.post.profile.userId = :profileId")
+    void deleteAllByPostOwnerId(@Param("profileId") Long profileId);
 }

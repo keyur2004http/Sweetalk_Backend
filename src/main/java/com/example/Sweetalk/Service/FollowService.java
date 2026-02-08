@@ -93,7 +93,6 @@ public class FollowService {
                 .collect(Collectors.toList());
     }
     public List<ProfileDTO> getFollowing(Long userId) {
-        // Use the new method that filters by the ACCEPTED enum status
         List<Follow> acceptedFollows = followRepository.findByFollowerUserIdAndStatus(userId, FollowStatus.ACCEPTED);
         return acceptedFollows.stream()
                 .map(follow -> new ProfileDTO(follow.getFollowing()))

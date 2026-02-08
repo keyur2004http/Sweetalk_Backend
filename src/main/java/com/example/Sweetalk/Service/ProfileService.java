@@ -85,6 +85,25 @@ public class ProfileService {
         }
         profileRepository.save(profile);
     }
+
+    public ResponseEntity<ProfileDTO> getProfileById(Long userId, Long requesterId) {
+        Profile targetProfile = profileRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean isOwnProfile = targetProfile.getUserId().equals(requesterId);
+        boolean isFollowing = followRepository
+                .existsByFollowerUserIdAndFollowingUserIdAndStatus(
+                        requesterId, userId, FollowStatus.ACCEPTED);
+
+        ProfileDTO dto = new ProfileDTO(targetProfile);
+
+        if (!isOwnProfile && !targetProfile.getPublic() && !isFollowing) {
+            dto.setPosts(Collections.emptyList());
+        }
+
+        return ResponseEntity.ok(dto);
+    }
+
     @Transactional
     public void deleteAccount(String username) {
 
@@ -92,13 +111,13 @@ public class ProfileService {
                 .orElseThrow(() -> new RuntimeException("Profile not found"));
 
         Long profileId = profile.getUserId();
-
         likesRepository.deleteByProfileId(profileId);
         commentRepository.deleteByProfileId(profileId);
         messageRepository.deleteUserMessages(username);
         followRepository.deleteAllByProfileId(profileId);
+        likesRepository.deleteAllByPostOwnerId(profileId);
         postRepository.deleteByProfileId(profileId);
-
+        userRepository.deleteByUsername(username);
         profileRepository.delete(profile);
     }
 }

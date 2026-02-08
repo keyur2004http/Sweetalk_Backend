@@ -1,5 +1,6 @@
 package com.example.Sweetalk.Service;
 
+import com.example.Sweetalk.DTO.ApiResponse;
 import com.example.Sweetalk.Model.Users;
 import com.example.Sweetalk.Repository.UserRepository;
 import com.example.Sweetalk.DTO.RegisterRequest;
@@ -25,30 +26,39 @@ public class AuthService {
     private PasswordEncoder passwordEncoder;
 
     @Transactional
-    public String registerAuthUser(RegisterRequest registerRequest) {
-        if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
-            return "Users already exists";
+    public ApiResponse registerAuthUser(RegisterRequest registerRequest) {
+        if (registerRequest.getUsername() == null || !registerRequest.getUsername().matches("^[a-z0-9._]+$")) {
+            return new ApiResponse(false,
+                    "Username must be lowercase and can only contain letters, numbers, '.' or '_'");
         }
+        if (!registerRequest.getEmail().contains("@")) {
+            return new ApiResponse(false, "Please provide a valid email address");
+        }
+        if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
+            return new ApiResponse(false, "Username already exists!");
+        }
+
         try {
             Profile profile = new Profile();
             profile.setUsername(registerRequest.getUsername());
             profile.setFirstname(registerRequest.getFirstname());
             profile.setLastname(registerRequest.getLastname());
+            profile.setPublic(true);
             profileRepository.save(profile);
-            Users users=new Users();
+            Users users = new Users();
             users.setUsername(registerRequest.getUsername());
             users.setEmail(registerRequest.getEmail());
+
             users.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
             users.setRole(Role.ROLE_USER);
             userRepository.save(users);
-            return "Users registered successfully";
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            return "Error occurred while registering user";
+
+            return new ApiResponse(true, "User registered successfully!");
+        } catch (Exception e) {
+            return new ApiResponse(false, "System Error: " + e.getMessage());
         }
     }
+
     public boolean authenticateUser (String username, String rawPassword) {
         Users users = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Users not found"));

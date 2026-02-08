@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+    @Autowired
+    static PasswordEncoder passwordEncoder;
 
     private AuthService authService;
 
@@ -34,18 +36,19 @@ public class AuthController {
     @Autowired
     JwtUtil jwtUtil;
 
-    @Autowired
-    PasswordEncoder passwordEncoder;
 
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
 
-    // Register User
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest) {
-        return ResponseEntity.ok(authService.registerAuthUser(registerRequest));
-
+    public ResponseEntity<ApiResponse> register(@RequestBody RegisterRequest registerRequest) {
+        ApiResponse response = authService.registerAuthUser(registerRequest);
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response); // Status 200
+        } else {
+            return ResponseEntity.badRequest().body(response); // Status 400
+        }
     }
 
     //Login
@@ -68,6 +71,7 @@ public class AuthController {
     public ResponseEntity<ProfileDTO> getLoggedInUser(HttpSession session) {
         Profile user = (Profile) session.getAttribute("user");
         return ResponseEntity.ok(new ProfileDTO(user));
+
     }
 
 

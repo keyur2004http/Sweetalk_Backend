@@ -9,16 +9,20 @@ import com.example.Sweetalk.Repository.ProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.Sweetalk.Service.FollowService;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+
+@RestController
 @RequestMapping("/api/follow")
 public class FollowController {
 
@@ -146,7 +150,6 @@ public class FollowController {
     }
     @GetMapping("/requests")
     public ResponseEntity<List<ProfileDTO>> getFollowRequests(@RequestParam Long userId) {
-
         Profile user = profileRepository.findById(userId)
                 .orElseThrow();
 
@@ -176,22 +179,35 @@ public class FollowController {
         return ResponseEntity.ok(dtos);
     }
     @GetMapping("/suggestions/random")
-    public ResponseEntity<List<ProfileDTO>> getSuggestions(
-            @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> getSuggestions(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body("User not logged in");
+        }
 
-        Profile currentUser = profileRepository
-                .findByUsername(userDetails.getUsername())
-                .orElseThrow();
+        try {
+            Profile currentUser = profileRepository.findByUsername(userDetails.getUsername())
+                    .orElse(null);
 
-        List<Profile> suggestions =
-                followRepository.findRandomSuggestions(currentUser.getUserId());
+            if (currentUser == null) {
+                return ResponseEntity.status(404).body("Profile not found for " + userDetails.getUsername());
+            }
+            List<Profile> suggestions = followRepository.findRandomSuggestions(currentUser.getUserId());
 
-        List<ProfileDTO> dtos = suggestions.stream()
-                .limit(5)
-                .map(ProfileDTO::new)
-                .collect(Collectors.toList());
+            if (suggestions == null) {
+                return ResponseEntity.ok(Collections.emptyList());
+            }
 
-        return ResponseEntity.ok(dtos);
+            List<ProfileDTO> dtos = suggestions.stream()
+                    .limit(5)
+                    .map(ProfileDTO::new)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(dtos);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Internal Error: " + e.getMessage());
+        }
     }
 }
 
