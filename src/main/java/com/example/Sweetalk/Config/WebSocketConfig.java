@@ -1,6 +1,7 @@
 package com.example.Sweetalk.Config;
 
 import com.example.Sweetalk.DTO.UserStatus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
@@ -12,11 +13,17 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
+import java.util.Arrays;
+
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private SimpMessageSendingOperations messagingTemplate;
+
+    @Value("${ALLOWED_ORIGINS}")
+    private String[] allowedOrigins;
+
 
     public void WebSocketEventListener(SimpMessageSendingOperations messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
@@ -24,7 +31,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("http://localhost:3000")
+                .setAllowedOriginPatterns(Arrays.stream(allowedOrigins)
+                        .map(String::trim)
+                        .toArray(String[]::new))
                 .withSockJS();
     }
 
