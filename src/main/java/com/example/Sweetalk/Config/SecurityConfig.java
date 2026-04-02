@@ -82,7 +82,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/auth/**,/health").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
