@@ -51,7 +51,6 @@ public class ChatController {
     @GetMapping("/getChattedUsers/{username}")
     public List<ProfileDTO> getChatUsers(@PathVariable String username) {
         List<String> usernames = messageRepository.findChatUsernames(username);
-
         return profileRepository.findByUsernameIn(usernames)
                 .stream()
                 .map(profile -> {

@@ -22,7 +22,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private SimpMessageSendingOperations messagingTemplate;
 
     @Value("${ALLOWED_ORIGINS}")
-    private String[] allowedOrigins;
+    private String allowedOrigins;
 
 
     public void WebSocketEventListener(SimpMessageSendingOperations messagingTemplate) {
@@ -31,8 +31,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns(Arrays.stream(allowedOrigins)
-                        .map(String::trim)
+                .setAllowedOriginPatterns(Arrays.stream(allowedOrigins.split(","))
+                                .map(String::trim)
                         .toArray(String[]::new))
                 .withSockJS();
     }
